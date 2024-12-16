@@ -1,2 +1,48 @@
 server:
   port: 1122
+  tomcat:
+    threads:
+      max: 10
+
+spring:
+  application:
+    name: spring.research
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      checkRandom:
+        register-health-indicator: true
+        sliding-window-size: 10 # Số lượng cuộc gọi được xem xét trong cửa sổ trượt
+        minimum-number-of-calls: 5 # Số lượng cuộc gọi tối thiểu để xem xét trạng thái mở
+        permitted-number-of-calls-in-half-open-state: 3 # Số lượng cuộc gọi được phép trong trạng thái mở nửa
+        wait-duration-in-open-state: 5s # Thời gian chờ ở trạng thái open trước khi chuyển sang trạng thái half-open
+        failure-rate-threshold: 50
+#        sliding-window-type: TIME_BASED # Đan
+        event-consumer-buffer-size: 10
+
+  ratelimiter:
+    instances:
+      backendA:
+        limit-for-period: 2 # Number of permissions available during one limit-refresh-period
+        limit-refresh-period: 10s
+        timeout-duration: 0 # Timeout duration for permission
+        register-health-indicator: true
+        event-consumer-buffer-size: 100
+      backendB:
+        limit-for-period: 5
+        limit-refresh-period: 10s
+        timeout-duration: 3s
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"
+  endpoint:
+    health:
+      show-details: always
